@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride;
+package edu.stanford.rad.stride;
 
 import java.io.File;
 import java.io.FileNotFoundException;

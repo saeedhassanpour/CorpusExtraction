@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.spontaneusabortion;
+package edu.stanford.rad.stride.spontaneusabortion;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.stanford.rad.ner.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ExtractReportsDates;
 
 public class ExtractReportsPositiveSpontaneusAbortion {
 

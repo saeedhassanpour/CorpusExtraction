@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.antepartumhaemorrhage;
+package edu.stanford.rad.stride.antepartumhaemorrhage;
 
 import java.io.File;
 import java.io.FileNotFoundException;

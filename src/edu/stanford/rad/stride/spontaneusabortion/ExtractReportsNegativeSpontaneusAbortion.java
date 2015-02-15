@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.ectopicpregnancy;
+package edu.stanford.rad.stride.spontaneusabortion;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-public class ExtractReportsNegativeEctopicPregnancy {
+public class ExtractReportsNegativeSpontaneusAbortion {
 
 	public static void main(String[] args) throws FileNotFoundException,IOException {
 		long startTime = System.currentTimeMillis();
 		final File folder = new File("/Users/saeedhp/Dropbox/Stanford/Data/STRIDE/Reports");
-		final String outputFolder = "files/stride/ectopicPregnancy/";
-		
+		final String outputFolder = "files/stride/spontaneusAbortion/";
+
 		List<String> ourProcedures = Arrays.asList("US R/O ECTOPIC PREGNANCY", "US PELVIS NON OB WO TRANSVAG", "US PELVIS NON OB W TRANSVAG", "US PREGNANCY UTERUS WITH TRANS VAGINAL UNDER 14 WKS", "US UTERUS PREGNANT", "US UTERUS PREGNANT LTD");
 
 		Random rand = new Random(123);
@@ -42,7 +42,6 @@ public class ExtractReportsNegativeEctopicPregnancy {
 					}
 					
 					if(fields.length<6 || fields.length>14){ //For negative
-						
 						continue;
 					}
 
@@ -53,8 +52,7 @@ public class ExtractReportsNegativeEctopicPregnancy {
 						if (stringCode.matches("-?\\d+(\\.\\d+)?")) {
 							code = Double.parseDouble(stringCode);
 						}
-						
-						if ((int)Math.floor(code) == 633) { //Code
+						if ((int)Math.floor(code) == 634) { //Code
 							OurDisease = true;
 							break;
 						}
@@ -65,7 +63,7 @@ public class ExtractReportsNegativeEctopicPregnancy {
 						int patID = Integer.parseInt(fields[1]);
 						String report = fields[4].trim();
 						
-						if(rand.nextDouble() < 0.15)
+						if(rand.nextDouble() < 0.30)
 						{
 							PrintWriter pw = new PrintWriter(outputFolder + "corpus/negative/" + patID +".txt", "UTF-8");
 							pw.println(report);

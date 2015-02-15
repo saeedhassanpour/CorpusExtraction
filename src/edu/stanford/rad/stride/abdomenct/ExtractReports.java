@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.abdomenct;
+package edu.stanford.rad.stride.abdomenct;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +19,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.stanford.rad.ner.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ExtractReportsDates;
 
 public class ExtractReports {
 

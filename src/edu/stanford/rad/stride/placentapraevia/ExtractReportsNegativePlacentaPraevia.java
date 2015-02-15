@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.placentapraevia;
+package edu.stanford.rad.stride.placentapraevia;
 
 import java.io.File;
 import java.io.FileNotFoundException;

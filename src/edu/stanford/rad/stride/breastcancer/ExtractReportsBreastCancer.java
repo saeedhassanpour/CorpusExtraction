@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.breastcancer;
+package edu.stanford.rad.stride.breastcancer;
 
 import java.io.File;
 import java.io.FileNotFoundException;

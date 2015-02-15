@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.abdomenct;
+package edu.stanford.rad.stride.abdomenct;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.stanford.rad.ner.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ExtractReportsDates;
 
-public class ExtractFirstReports {
+public class ExtractCrossValidationReports {
 
-	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
+	public static void main(String[] args) throws FileNotFoundException,
+			IOException, ParseException {
 		long startTime = System.currentTimeMillis();
 		final File folder = new File("/Users/saeedhp/Dropbox/Stanford/Data/STRIDE/Reports");
 		String outputFolder = "files/stride/abdomenCT/";
@@ -33,7 +34,8 @@ public class ExtractFirstReports {
 		Date noDate = formatter.parse("01/01/1900");
 
 		for (final File fileEntry : folder.listFiles()) {
-			if (!fileEntry.isDirectory() && !fileEntry.getName().startsWith(".")) {
+			if (!fileEntry.isDirectory()
+					&& !fileEntry.getName().startsWith(".")) {
 				String fileName = fileEntry.getName();
 				String filepath = fileEntry.getPath();
 				System.out.println("Working on " + fileName + "...");
@@ -52,14 +54,16 @@ public class ExtractFirstReports {
 
 					// Get dates
 					Date date = null;
-					int trimIndex = report.indexOf(" I have personally reviewed the images for this examination and agree");
+					int trimIndex = report
+							.indexOf(" I have personally reviewed the images for this examination and agree");
 					if (trimIndex != -1) { //
 						String signature = report.substring(trimIndex);
 						date = ExtractReportsDates.findDateinString(signature);
 					}
 
 					if (date == null || date.equals(noDate)) {
-						String firstLine = report.substring(0, Math.min(report.length(), 140));
+						String firstLine = report.substring(0,
+								Math.min(report.length(), 140));
 						date = ExtractReportsDates.findDateinString(firstLine);
 					}
 
@@ -70,7 +74,8 @@ public class ExtractFirstReports {
 					// add procedure Description
 					ArrayList<String> procedureDescList = new ArrayList<String>();
 					if (patientProcedureDesc.containsKey(patID)) {
-						procedureDescList.addAll(patientProcedureDesc.get(patID));
+						procedureDescList.addAll(patientProcedureDesc
+								.get(patID));
 					}
 					procedureDescList.add(fields[3].trim());
 					patientProcedureDesc.put(patID, procedureDescList);
@@ -95,20 +100,31 @@ public class ExtractFirstReports {
 
 		}
 
-		int skipped = 0, counter = 0, p = 0, n = 0;
-		PrintWriter cpw = new PrintWriter(outputFolder + "counts.tsv", "UTF-8");
+		int skipped = 0, counter = 0;
 		for (int patID : patientProcedureDesc.keySet()) {
 
 			ArrayList<Date> sortedDteList = new ArrayList<Date>();
 			sortedDteList.addAll(patientDates.get(patID));
 			Collections.sort(sortedDteList);
-			Date first = sortedDteList.get(0);
 
+			Date first = sortedDteList.get(0);
 			if (first.equals(noDate)) {
 				++skipped;
 				continue;
 			}
-		
+			
+			if(sortedDteList.size() < 5) //k
+			{
+				++skipped;
+				continue;
+			}
+			Date second = sortedDteList.get(1);
+			Date third = sortedDteList.get(2);
+			Date forth = sortedDteList.get(3);
+			Date fifth = sortedDteList.get(4);
+
+
+
 			boolean skp = true;
 			ArrayList<String> procList = patientProcedureDesc.get(patID);
 			for (String proc : procList) {
@@ -117,40 +133,36 @@ public class ExtractFirstReports {
 					break;
 				}
 			}
+			
+			String tag = "5-10"; //
 
 			if (!skp) {
 				++counter;
-				// cpw.println(procList.size());
-				int procSize = procList.size();
-
 				List<String> reportList = patientReport.get(patID);
 				List<Date> dateList = patientDates.get(patID);
-
-				for (int i = 0; i < dateList.size(); ++i) {
-					if (dateList.get(i).equals(first)) {
-						if (procSize > 10) {
-							++p;
-							PrintWriter pw = new PrintWriter(outputFolder + "corpus/positive/" + patID + ".txt", "UTF-8");
+				int k = reportList.size();
+				
+				if (k == 5) { //
+					PrintWriter pw = new PrintWriter(outputFolder + "crossValidation/"+tag+"/corpus/negative/" + patID + ".txt", "UTF-8");
+					for (int i = 0; i < dateList.size(); ++i) {
+						if (dateList.get(i).equals(first) || dateList.get(i).equals(second) || dateList.get(i).equals(third) || dateList.get(i).equals(forth) || dateList.get(i).equals(fifth)) {
 							pw.println(reportList.get(i));
-							pw.close();
-							break;
-						} else
-						if(procSize == 2)
-						{
-							++n;
-							PrintWriter pw = new PrintWriter(outputFolder + "corpus/negative/" + patID + ".txt", "UTF-8");
-							pw.println(reportList.get(i));
-							pw.close();
-							break;
 						}
 					}
+					pw.close();
+				}else if (k > 10) {
+					PrintWriter pw = new PrintWriter(outputFolder + "crossValidation/"+tag+"/corpus/positive/" + patID + ".txt", "UTF-8"); 
+					for (int i = 0; i < dateList.size(); ++i) {
+						if (dateList.get(i).equals(first) || dateList.get(i).equals(second) || dateList.get(i).equals(third) || dateList.get(i).equals(forth) || dateList.get(i).equals(fifth)) {
+							pw.println(reportList.get(i));
+						}
+					}
+					pw.close();
 				}
-
 			}
 		}
 
-		cpw.close();
-		System.out.println("counter: " + counter + " P: " + p + " N: " + n);
+		System.out.println("counter: " + counter);
 		System.out.println("Records without dates: " + ndate);
 		System.out.println("Number of skipped: " + skipped);
 		long endTime = System.currentTimeMillis();

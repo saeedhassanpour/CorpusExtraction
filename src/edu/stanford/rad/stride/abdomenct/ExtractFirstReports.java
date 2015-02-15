@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.abdomenct;
+package edu.stanford.rad.stride.abdomenct;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.stanford.rad.ner.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ExtractReportsDates;
 
-public class ExtractFirst2Reports {
+public class ExtractFirstReports {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException, ParseException {
 		long startTime = System.currentTimeMillis();
@@ -70,8 +70,7 @@ public class ExtractFirst2Reports {
 					// add procedure Description
 					ArrayList<String> procedureDescList = new ArrayList<String>();
 					if (patientProcedureDesc.containsKey(patID)) {
-						procedureDescList.addAll(patientProcedureDesc
-								.get(patID));
+						procedureDescList.addAll(patientProcedureDesc.get(patID));
 					}
 					procedureDescList.add(fields[3].trim());
 					patientProcedureDesc.put(patID, procedureDescList);
@@ -97,6 +96,7 @@ public class ExtractFirst2Reports {
 		}
 
 		int skipped = 0, counter = 0, p = 0, n = 0;
+		PrintWriter cpw = new PrintWriter(outputFolder + "counts.tsv", "UTF-8");
 		for (int patID : patientProcedureDesc.keySet()) {
 
 			ArrayList<Date> sortedDteList = new ArrayList<Date>();
@@ -108,17 +108,7 @@ public class ExtractFirst2Reports {
 				++skipped;
 				continue;
 			}
-
-			///
-			int k = 2;
-			if (sortedDteList.size() < k){// || (sortedDteList.size() > k && sortedDteList.size() <= 10)) {
-				++skipped;
-				continue;
-			}
-			Date second = sortedDteList.get(1);
-			//Date third = sortedDteList.get(2);
-			///
-
+		
 			boolean skp = true;
 			ArrayList<String> procList = patientProcedureDesc.get(patID);
 			for (String proc : procList) {
@@ -130,34 +120,36 @@ public class ExtractFirst2Reports {
 
 			if (!skp) {
 				++counter;
+				// cpw.println(procList.size());
 				int procSize = procList.size();
+
 				List<String> reportList = patientReport.get(patID);
 				List<Date> dateList = patientDates.get(patID);
 
-				if (procSize > 10) {
-					++p;
-					PrintWriter pw = new PrintWriter(outputFolder + "corpus/positive/" + patID + ".txt", "UTF-8");
-					for (int i = 0; i < dateList.size(); ++i) {
-						if (dateList.get(i).equals(first) || dateList.get(i).equals(second)){// || dateList.get(i).equals(third)) {
+				for (int i = 0; i < dateList.size(); ++i) {
+					if (dateList.get(i).equals(first)) {
+						if (procSize > 10) {
+							++p;
+							PrintWriter pw = new PrintWriter(outputFolder + "corpus/positive/" + patID + ".txt", "UTF-8");
 							pw.println(reportList.get(i));
+							pw.close();
+							break;
+						} else
+						if(procSize == 2)
+						{
+							++n;
+							PrintWriter pw = new PrintWriter(outputFolder + "corpus/negative/" + patID + ".txt", "UTF-8");
+							pw.println(reportList.get(i));
+							pw.close();
+							break;
 						}
 					}
-					pw.close();
-				} else
-				//if (procSize == k)
-				{
-					++n;
-					PrintWriter pw = new PrintWriter(outputFolder + "corpus/negative/" + patID + ".txt", "UTF-8");
-					for (int i = 0; i < dateList.size(); ++i) {
-						if (dateList.get(i).equals(first) || dateList.get(i).equals(second)){// || dateList.get(i).equals(third)) {
-							pw.println(reportList.get(i));
-						}
-					}
-					pw.close();
 				}
+
 			}
 		}
 
+		cpw.close();
 		System.out.println("counter: " + counter + " P: " + p + " N: " + n);
 		System.out.println("Records without dates: " + ndate);
 		System.out.println("Number of skipped: " + skipped);

@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.antepartumhaemorrhage;
+package edu.stanford.rad.stride.ectopicpregnancy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,17 +15,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.stanford.rad.ner.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ExtractReportsDates;
 
-public class ExtractReportsPositiveAntepartumHaemorrhage {
+public class ExtractReportsPositiveEctopicPregancy {
 
 	public static void main(String[] args) throws FileNotFoundException,IOException, ParseException {
 		long startTime = System.currentTimeMillis();
 		final File folder = new File("/Users/saeedhp/Dropbox/Stanford/Data/STRIDE/Reports");
-		final String outputFolder = "files/stride/antepartumHaemorrhage/";
+		final String outputFolder = "files/stride/ectopicPregnancy/";
 		
 		List<String> ourProcedures = Arrays.asList("US R/O ECTOPIC PREGNANCY", "US PELVIS NON OB WO TRANSVAG", "US PELVIS NON OB W TRANSVAG", "US PREGNANCY UTERUS WITH TRANS VAGINAL UNDER 14 WKS", "US UTERUS PREGNANT", "US UTERUS PREGNANT LTD");
-		
+
 		Map<Integer, ArrayList<String>> patientReport = new HashMap<Integer,ArrayList<String>>();
 		Map<Integer, ArrayList<Date>> patientDates = new HashMap<Integer,ArrayList<Date>>();
 		
@@ -65,8 +65,8 @@ public class ExtractReportsPositiveAntepartumHaemorrhage {
 						if (stringCode.matches("-?\\d+(\\.\\d+)?")) {
 							code = Double.parseDouble(stringCode);
 						}
-
-						if (code >= 641.30 && code <= 641.93) { 
+						
+						if ((int)Math.floor(code) == 633) { //Code
 							OurDisease = true;
 							break;
 						}

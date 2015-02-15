@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride.breastcancer;
+package edu.stanford.rad.stride.antepartumhaemorrhage;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -9,28 +9,25 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
-import edu.stanford.rad.ner.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ExtractReportsDates;
 
-public class ExtractReportsBreastCancerWithDates {
+public class ExtractReportsPositiveAntepartumHaemorrhage {
 
 	public static void main(String[] args) throws FileNotFoundException,IOException, ParseException {
 		long startTime = System.currentTimeMillis();
 		final File folder = new File("/Users/saeedhp/Dropbox/Stanford/Data/STRIDE/Reports");
-		String outputFolder = "files/stride/breastCancer180/";
-		//Random rand = new Random(123);
-
-		List<String> ourProcedures = Arrays.asList("MRI BREAST UNILATERAL", "MR BREASTS BILATERAL FOR CANCER", "MRI BREASTS BILAT FOR CANCER");
+		final String outputFolder = "files/stride/antepartumHaemorrhage/";
+		
+		List<String> ourProcedures = Arrays.asList("US R/O ECTOPIC PREGNANCY", "US PELVIS NON OB WO TRANSVAG", "US PELVIS NON OB W TRANSVAG", "US PREGNANCY UTERUS WITH TRANS VAGINAL UNDER 14 WKS", "US UTERUS PREGNANT", "US UTERUS PREGNANT LTD");
 		
 		Map<Integer, ArrayList<String>> patientReport = new HashMap<Integer,ArrayList<String>>();
 		Map<Integer, ArrayList<Date>> patientDates = new HashMap<Integer,ArrayList<Date>>();
-		
 		
 		int ndate = 0;
 		DateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
@@ -57,9 +54,9 @@ public class ExtractReportsBreastCancerWithDates {
 						continue;
 					}
 
-					if(fields.length<6 || fields.length>14){ // For negative
-						continue;
-					}
+//					if(fields.length<6 || fields.length>14){
+//						continue;
+//					}
 					
 					boolean OurDisease = false;
 					for (int i = 5; i < fields.length; ++i) {
@@ -68,13 +65,14 @@ public class ExtractReportsBreastCancerWithDates {
 						if (stringCode.matches("-?\\d+(\\.\\d+)?")) {
 							code = Double.parseDouble(stringCode);
 						}
-						if ((int)Math.floor(code) == 174) { //Code
+
+						if (code >= 641.30 && code <= 641.93) { 
 							OurDisease = true;
 							break;
 						}
 					}
 					
-					if(!OurDisease){ //
+					if(OurDisease){
 						int patID = Integer.parseInt(fields[1]);
 						String report = fields[4].trim();
 						
@@ -94,6 +92,7 @@ public class ExtractReportsBreastCancerWithDates {
 						if(date.equals(noDate)){
 							ndate++;
 						}
+						//System.out.println(date);
 						
 						// add report
 						ArrayList<String> reportList = new ArrayList<String>();
@@ -118,55 +117,38 @@ public class ExtractReportsBreastCancerWithDates {
 		int skipped = 0;
 		for (int patID : patientReport.keySet()) {
 			ArrayList<String> reportList = patientReport.get(patID);
-
-			if (reportList.size() == 1) //&& rand.nextDouble() < 0.33) 
-			{
-				PrintWriter pw = new PrintWriter(outputFolder + "corpus/negative/" + patID + ".txt", "UTF-8");
+			
+			if (reportList.size() == 1) {
+				PrintWriter pw = new PrintWriter(outputFolder + "corpus/positive/" + patID + ".txt", "UTF-8");
 				pw.println(reportList.get(0));
 				pw.close();
 
 			} else {
-				ArrayList<Date> sortedDteList = new ArrayList<Date>();
-				sortedDteList.addAll(patientDates.get(patID));
-				Collections.sort(sortedDteList);
-				// System.out.println(sortedDteList);
+				ArrayList<Date> dateList = patientDates.get(patID);
+				Date lastDate = formatter.parse("01/02/1900");
+				String report = "";
 
-				boolean skp = true;
-				int diffinDays = 0;
-				Date first = sortedDteList.get(0);
-				
-				if (!first.equals(noDate)) {
-					skp = false;
-					Date last = sortedDteList.get(sortedDteList.size() - 1);
-					diffinDays = (int) ((last.getTime() - first.getTime()) / (1000 * 60 * 60 * 24));
-					//System.out.println(diffinDays);
-				}
-
-				if (!skp) { 
-					List<Date> dateList = patientDates.get(patID);
-					for (int i = 0; i < dateList.size(); ++i) {
-						if (dateList.get(i).equals(first)) {
-							if (diffinDays > 180) { //
-								PrintWriter pw = new PrintWriter(outputFolder + "corpus/positive/"+ patID + ".txt", "UTF-8");
-								pw.println(reportList.get(i));
-								pw.close();
-								break;
-							} 
-							else
-								//if(rand.nextDouble() < 0.23)
-								{
-									PrintWriter pw = new PrintWriter(outputFolder + "corpus/negative/"+ patID + ".txt", "UTF-8");
-									pw.println(reportList.get(i));
-									pw.close();
-									break;
-								}
-						}
+				boolean skp = false;
+				for (int i = 0; i < dateList.size(); ++i) {
+					Date iDate = dateList.get(i);
+					
+					if (iDate.equals(noDate)) {
+						System.out.println("No Date for patient " + patID + ": " + iDate);
+						++skipped;
+						skp = true;
+						break;
+					} else if (iDate.after(lastDate)) {
+						lastDate = iDate;
+						report = reportList.get(i);
 					}
-				} else {
-					++skipped;
-					//System.out.println("skipped: " + sortedDteList);
+					
 				}
+				if(!skp){
+					PrintWriter pw = new PrintWriter(outputFolder + "corpus/positive/" + patID + ".txt", "UTF-8");
+					pw.println(report);
+					pw.close();
 
+				}
 			}
 		}
 

@@ -1,4 +1,4 @@
-package edu.stanford.rad.ner.stride;
+package edu.stanford.rad.stride;
 
 import java.text.DateFormat;
 import java.text.ParseException;
