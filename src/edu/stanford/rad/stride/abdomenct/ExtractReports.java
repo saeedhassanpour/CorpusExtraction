@@ -17,9 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import edu.stanford.rad.stride.ExtractReportsDates;
+import edu.stanford.rad.stride.ValueComparator;
 
 public class ExtractReports {
 
@@ -31,7 +33,8 @@ public class ExtractReports {
 		Map<Integer, ArrayList<Date>> patientDates = new HashMap<Integer, ArrayList<Date>>();
 		Map<Integer, ArrayList<String>> patientProcedureDesc = new HashMap<Integer, ArrayList<String>>();
 		Map<Integer, ArrayList<String>> patientReport = new HashMap<Integer, ArrayList<String>>();
-		Map<Integer, Set<String>> categoryPatients = new HashMap<Integer, Set<String>>();
+		Map<Integer, Set<String>> categoryPatients = new TreeMap<Integer, Set<String>>();
+		Map<String, Integer> procedureCounts = new HashMap<String, Integer>();
 
 
 		int ndate = 0;
@@ -103,6 +106,7 @@ public class ExtractReports {
 		}
 
 		int counter = 0;
+		PrintWriter cpw = new PrintWriter(outputFolder + "corpus/procCountsPerPatient.tsv", "UTF-8");
 		for (int patID : patientProcedureDesc.keySet()) {
 			
 			boolean skp = true;
@@ -151,13 +155,28 @@ public class ExtractReports {
 			}
 			
 			//Add patient to categories
-			int cat = (k > 20) ? 20 : k;
+			//int cat = (k > 20) ? 20 : k;   //Categories or Day
+			int cat = k;
 			Set<String> patientSet = new HashSet<String>();
 			if (categoryPatients.containsKey(cat)) {
 				patientSet.addAll(categoryPatients.get(cat));
 			}
 			patientSet.add(patID + ".txt");
 			categoryPatients.put(cat, patientSet);
+			
+			//Add procedure counts
+			for (String proc : procList) {
+				int pc = 0;
+				if (procedureCounts.containsKey(proc)) {
+					pc = procedureCounts.get(proc);
+				}
+				++pc;
+				procedureCounts.put(proc, pc);
+			}
+			
+			//Write proc count for patient 
+			cpw.printf("%d\n", procList.size());
+
 			
 			if (k < 20) {
 				PrintWriter pw = new PrintWriter(outputFolder + "corpus/reports/1/report" + k + "/" + patID + ".txt", "UTF-8");
@@ -221,11 +240,24 @@ public class ExtractReports {
 				pw.close();
 			}
 		}
+		cpw.close();
 
-		PrintWriter pw = new PrintWriter(outputFolder + "corpus/counts.tsv", "UTF-8");
+		PrintWriter pw = new PrintWriter(outputFolder + "corpus/dayCounts.tsv", "UTF-8");
 		for(int cat: categoryPatients.keySet())
 		{
 			pw.printf("%d\t%d\n", cat, categoryPatients.get(cat).size());
+		}
+		pw.close();
+		
+		ValueComparator<String> bvc = new ValueComparator<String>(procedureCounts);
+		TreeMap<String, Integer> sortedProcedureCounts = new TreeMap<String, Integer>(bvc);
+		sortedProcedureCounts.putAll(procedureCounts);
+		
+		pw = new PrintWriter(outputFolder + "corpus/procCounts.tsv", "UTF-8");
+		for (Map.Entry<String, Integer> entry : sortedProcedureCounts.entrySet()) {
+			String p = entry.getKey();
+			int c = entry.getValue();
+			pw.printf("%s\t%d\n", p, c);
 		}
 		pw.close();
 		

@@ -87,7 +87,7 @@ public class ExtractPatternsByICD9 {
 		}
 		
 		Map<ArrayList<String>, Integer> patterns = new HashMap<ArrayList<String>, Integer>();
-		ValueComparatorComplex bvc = new ValueComparatorComplex(patterns);
+		ValueComparator<ArrayList<String>> bvc = new ValueComparator<ArrayList<String>>(patterns);
 		TreeMap<ArrayList<String>, Integer> sortedPatterns = new TreeMap<ArrayList<String>, Integer>(bvc);
 
 		for (int pid : patientProcedureDesc.keySet()) {
