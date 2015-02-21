@@ -62,7 +62,7 @@ public class ExtractReportsByExam {
 		StringBuilder output = new StringBuilder();
 		Random randomGenerator = new Random();
 		Set<Integer> ids = new HashSet<Integer>();
-		int n = 25, i=0;
+		int n = 3, i=0;
 		while (i<n)
 		{
 			int index = randomGenerator.nextInt(reportList.size());
